@@ -4,21 +4,24 @@ int main() {
     struct Node* root = NULL;
     FILE* userText = fopen("usersText.txt", "r");
     if (userText == NULL) {
-        printf("Error opening file for writing.\n");
+        printf("Error opening file for reading.\n");
         return 1;
     }
     loadFile(&root, userText);
     fclose(userText);
 
-
     registerUser(root);
+    userText = fopen("usersText.txt","w");
+    if(userText == NULL){
+        printf("Error opening file for writing");
+        return 1;
+    }
     saveFile(root, userText);
     fclose(userText);
 
     freeTree(root); // Free memory after saving to file
     return 0;
 }
-
 
 struct Node* newNode(char* name, char* phone , char* email , char* password,int point){
     struct Node* node=(struct Node*)malloc(sizeof(struct Node));
@@ -27,27 +30,29 @@ struct Node* newNode(char* name, char* phone , char* email , char* password,int 
     strncpy(node->email, email,MAX_EMAIL_LENGTH);
     strncpy(node->password, password,MAX_PASSWORD_LENGTH);
     node->point = point ;
-
     node->left = NULL;
     node->right = NULL;
-    int height = 1;
     return node;
 }
+
 int height(struct Node* node){
     if(node == NULL){
         return 0;
     }
     return node->height;
 }
+
 int max(int a,int b){
     return (a > b) ? a : b;
 }
+
 int getBalance(struct Node* node){
     if(node == NULL){
         return 0;
     }
     return height(node->left) - height(node->right);
 }
+
 struct Node* rightRotate(struct Node* y){
     struct Node* x = y->left;
     struct Node* T2 = x->right;
@@ -55,12 +60,12 @@ struct Node* rightRotate(struct Node* y){
     x->right = y;
     y->left = T2;
 
-    //recalculate height
     y->height = max(height(y->left),height(y->right)) + 1;
     x->height = max(height(x->left),height(x->right)) + 1;
 
     return x;
 }
+
 struct Node* leftRotate(struct Node* x){
     struct Node* y = x->right;
     struct Node* T2 = y->left;
@@ -68,12 +73,12 @@ struct Node* leftRotate(struct Node* x){
     y->left = x;
     x->right = T2;
 
-    //recalculate height
     y->height = max(height(y->left),height(y->right)) + 1;
     x->height = max(height(x->left),height(x->right)) + 1;
 
     return y;
 }
+
 struct Node* inserContact(struct Node* node,char* name,char* phone, char* email,char* password,int point){
     if(node == NULL){
         return newNode(name,phone,email,password,point);
@@ -89,11 +94,10 @@ struct Node* inserContact(struct Node* node,char* name,char* phone, char* email,
     node->height = max(height(node->left), height(node->right)) + 1;
 
     int balance = getBalance(node);
-    //left->left rotate
+
     if(balance > 1 && strcmp(node->name,name)<0){
         return rightRotate(node);
     }
-    //right->right rotate
     if(balance < -1 && strcmp(node->name,name)>0){
         return leftRotate(node);
     }
@@ -109,6 +113,7 @@ struct Node* inserContact(struct Node* node,char* name,char* phone, char* email,
 
     return node;
 }
+
 void display_user(struct Node* root){
     if(root != NULL){
         display_user(root->left);
@@ -124,6 +129,7 @@ void freeTree(struct Node* root){
         freeTree(root);
     }
 }
+
 void registerUser(struct Node* node) {
     struct Node* root = NULL;
     char name[MAX_NAME_LENGTH];
@@ -148,17 +154,16 @@ void registerUser(struct Node* node) {
                 scanf(" %[^\n]", name);
                 int p_chose = 1;
                 while(p_chose){
-                  printf("\nPlease type your phone number to register: ");
-                  scanf(" %[^\n]", phone);
+                    printf("\nPlease type your phone number to register: ");
+                    scanf(" %[^\n]", phone);
 
-                  if(!isValidPhone(phone)){
-                      printf("Number only 0 to 9 ");
-                      p_chose = 1;
-                  } else{
-                      p_chose = 0;
-                  }
+                    if(!isValidPhone(phone)){
+                        printf("Number only 0 to 9 ");
+                        p_chose = 1;
+                    } else{
+                        p_chose = 0;
+                    }
                 }
-
 
                 printf("\nPlease type your email to register: ");
                 scanf(" %[^\n]", email);
@@ -177,28 +182,29 @@ void registerUser(struct Node* node) {
                 saveFile(root, "usersText.txt");
                 break;
             case 2:
-                display_user(root);
+                display_user(node);
                 break;
             case 3:
-                loginPage(root);
+                loginPage(node);
                 break;
             case 4:
-                freeTree(root);
+                freeTree(node);
                 exit(0);
             default:
                 printf("Invalid choice. Please enter a number between 1 and 3.\n");
         }
     }
-
 }
+
 int isValidPhone(const char* phone){
     for (int i = 0; phone[i] != '\0'; i++) {
         if(!isdigit(phone[i])){
-            return 0;  //not digit
+            return 0;
         }
     }
-    return 1;  // digit
+    return 1;
 }
+
 int isUpperCase(char chr) {
     return chr >= 'A' && chr <= 'Z';
 }
@@ -214,6 +220,7 @@ int isSpecialCharacter(char chr) {
 int isNumber(char chr) {
     return chr >= '0' && chr <= '9';
 }
+
 int isValidPassword(const char* password){
     int number = 0;
     int special = 0;
@@ -221,7 +228,7 @@ int isValidPassword(const char* password){
     int uppercha = 0;
     int length = 0;
     for (int i = 0; password[i] != '\0' ; i++) {
-         length++;
+        length++;
         if(isUpperCase(password[i])){
             uppercha = 1;
         } else if(isLowerCase(password[i])){
@@ -234,9 +241,11 @@ int isValidPassword(const char* password){
     }
     return uppercha && lowcha && special && number && length >= 6;
 }
+
 int compareString(const char* str1, const char* str2){
     return strcmp(str1,str2);
 }
+
 struct Node* findNode(struct Node* root,const char* email){
     if(root == NULL || compareString(root->email,email) == 0){
         return root;
@@ -246,13 +255,15 @@ struct Node* findNode(struct Node* root,const char* email){
     }
     return findNode(root->right,email);
 }
-int login(struct Node* root,const char* email, const char* password){
-    struct Node* userNode = findNode(root,email);
-    if(userNode !=0 && strcmp(userNode->password,password) == 0){
-        return 1;//login success
+
+struct Node* login(struct Node* root, const char* email, const char* password) {
+    struct Node* userNode = findNode(root, email);
+    if (userNode != NULL && strcmp(userNode->password, password) == 0) {
+        return userNode;
     }
-    return 0; // fail
+    return NULL;
 }
+
 void loginPage(struct Node* root) {
     char inputEmail[MAX_EMAIL_LENGTH];
     char inputPassword[MAX_PASSWORD_LENGTH];
@@ -260,20 +271,24 @@ void loginPage(struct Node* root) {
     scanf(" %[^\n]", inputEmail);
     printf("\nPlease type your password: ");
     scanf(" %[^\n]", inputPassword);
-    if (login(root, inputEmail, inputPassword)) {
+    loggedInUser = login(root, inputEmail, inputPassword);
+    if (loggedInUser != NULL) {
         printf("Login Successful\n");
+        loggedInMenu(root, loggedInUser);
     } else {
         printf("Login Failed\n");
     }
 }
+
 void saveToFile(struct Node* node, FILE* file){
     if(node == NULL)return;
     saveToFile(node->left,file);
     fprintf(file,"%s %s %s %s %d\n",node->name,node->phone,node->email,node->password,node->point);
     saveToFile(node->right,file);
 }
+
 void saveFile(struct Node* root, FILE* userText) {
-    FILE* file = fopen("usersText.txt", "w");
+    FILE* file = fopen("usersText.txt", "a");
     if (file == NULL) {
         printf("Error opening file for writing.\n");
         return;
@@ -281,7 +296,8 @@ void saveFile(struct Node* root, FILE* userText) {
     saveToFile(root, file);
     fclose(file);
 }
-void loadFile(struct Node** root,FILE* userText){
+
+void loadFile(struct Node** root, FILE* userText){
     FILE* file = fopen("usersText.txt","r");
     if(file == NULL){
         printf("Error opening file for reading");
@@ -294,9 +310,69 @@ void loadFile(struct Node** root,FILE* userText){
     char password[MAX_PASSWORD_LENGTH];
     int point ;
 
-
     while (fscanf(file,"%s %s %s %s %d",name,phone,email,password,&point) != EOF){
         *root = inserContact(*root,name,phone,email,password,point);
+        printf("Loaded user with phone number: %s\n", phone);
     }
     fclose(file);
+}
+
+void loggedInMenu(struct Node* root, struct Node* loggedInUser){
+    int choice;
+    int choice2 = 1;
+    while (choice2){
+        printf("\n1. Send Points\n");
+        printf("2. Display Registered Users\n");
+        printf("3. Logout\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                sendPoints(root, loggedInUser);
+                break;
+            case 2:
+                display_user(root);
+                break;
+            case 3:
+                loggedInUser = NULL;
+                choice2 = 0;
+                printf("Logged out.\n");
+                break;
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+}
+
+void sendPoints(struct Node* root, struct Node* loggedInUser) {
+    if (loggedInUser == NULL) {
+        printf("Error: No user logged in.\n");
+        return;
+    }
+
+    char recipientEmail[MAX_EMAIL_LENGTH];
+    int pointsToSend;
+
+    printf("\nEnter recipient's email address: ");
+    scanf("%s", recipientEmail);
+
+    struct Node* recipient = findNode(root, recipientEmail);
+    if (recipient == NULL) {
+        printf("Recipient with email %s not found.\n", recipientEmail);
+        return;
+    }
+
+    printf("Enter points to send: ");
+    scanf("%d", &pointsToSend);
+
+    if (loggedInUser->point < pointsToSend) {
+        printf("Insufficient points to send.\n");
+        return;
+    }
+
+    loggedInUser->point -= pointsToSend;
+    recipient->point += pointsToSend;
+
+    printf("Points sent successfully to %s.\n", recipient->name);
 }
