@@ -30,6 +30,10 @@ struct Node{
     int height;
 };
 
+struct Node* loggedInUser = NULL;
+
+
+
 //Function Declare
 struct Node* newNode(char* name, char* phone, char* email , char* password, int point);
 int height(struct Node* node);
@@ -48,11 +52,13 @@ int isSpecialCharacter(char chr);
 int isNumber(char chr);
 int isValidPassword(const char* password);
 void loginPage(struct Node* root);
-int login(struct Node* root,const char* email, const char* password);
+struct Node* login(struct Node* root, const char* email, const char* password);
 struct Node* findNode(struct Node* root,const char* email);
 int compareString(const char* str1, const char* str2);
 void saveToFile(struct Node* node, FILE* file);
 void saveFile(struct Node* root, FILE* userText);
 void loadFile(struct Node** root,FILE * userText);
+void loggedInMenu(struct Node* root, struct Node* loggedInUser);
+void sendPoints(struct Node* root, struct Node* loggedInUser);
 
 #endif //DDSA_ASSIGMENT_FOR_HALF_YEAR_H
